@@ -25,15 +25,18 @@ async def create_patient(patient: Patient) -> Patient:
     patient_list.append(patient)
     return patient
     
-@app.put('/patients/{first_name}/{last_name}')
-async def update_patient(first_name: str, last_name: str, updated_patient: Patient):
+@app.put('/patients')
+async def update_patient(first_name: None | str = None, last_name: None | str = None, updated_patient: Patient = None):
     
     for patient in patient_list:
         if patient['first_name'] == first_name and patient['last_name'] == last_name:
             patient.update(updated_patient)
             return 'Updated successfully'
         
-        raise HTTPException(status_code=404, detail='Patient not found')
+        else:
+            patient_list.append(updated_patient)
+            return updated_patient
+        
     
 @app.delete('/patients/{first_name}/{last_name}')
 async def delete_patient(first_name: str, last_name: str):
@@ -43,7 +46,7 @@ async def delete_patient(first_name: str, last_name: str):
             patient_list.remove(patient)
             return f'{first_name} {last_name} deleted successfully'
         
-        raise HTTPException(status_code=404, detail='Patient not found')
+    raise HTTPException(status_code=404, detail='Patient not found')
             
     
     
