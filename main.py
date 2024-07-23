@@ -26,27 +26,29 @@ async def create_patient(patient: Patient) -> Patient:
     return patient
     
 @app.put('/patients')
-async def update_patient(first_name: None | str = None, last_name: None | str = None, updated_patient: Patient = None):
+async def update_patient(first_name: str, last_name: str, updated_patient: Patient):
     
     for patient in patient_list:
         if patient['first_name'] == first_name and patient['last_name'] == last_name:
             patient.update(updated_patient)
-            return 'Updated successfully'
-        
-        else:
-            patient_list.append(updated_patient)
             return updated_patient
+        
+    new_patient = Patient(first_name=updated_patient.first_name, last_name=updated_patient.last_name, address=updated_patient.address, age=updated_patient.age)
+    
+    patient_list.append(new_patient)
+    return new_patient
         
     
 @app.delete('/patients/{first_name}/{last_name}')
 async def delete_patient(first_name: str, last_name: str):
     
-    for patient in patient_list:
-        if patient['first_name'] == first_name and patient['last_name'] == last_name:
-            patient_list.remove(patient)
-            return f'{first_name} {last_name} deleted successfully'
-        
-    raise HTTPException(status_code=404, detail='Patient not found')
-            
+    global patient_list
     
+    patient_in_list = any(patient["first_name"] == first_name and patient["last_name"] == last_name for patient in patient_list)
+    if not patient_in_list:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    
+    patient_list = [patient for patient in patient_list if patient['first_name'] != first_name or patient['last_name'] != last_name]
+    
+    return patient_list
     
